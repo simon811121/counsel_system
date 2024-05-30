@@ -1,24 +1,6 @@
-import pytest
 import json
 
-from main import create_app
-
-
-@pytest.fixture()
-def test_app():
-    app = create_app()
-    app.config.update({
-        "TESTING": True,
-    })
-    
-    yield app
-
-@pytest.fixture()
-def client(test_app):
-    return test_app.test_client()
-
-
-def test_home(client):
+def test_login_home(client):
     resp = client.get("/api/v1/hello")
 
     assert resp.status_code == 200
@@ -26,9 +8,9 @@ def test_home(client):
 
 def test_login_success(client):
 
-    login_data_file = open("./test/input/login.json")    
+    login_data_file = open("./test/input/login.json")
     req_json_data = json.load(login_data_file)
-    
+
     resp = client.post("/api/v1/login", json=req_json_data)
     resp_json_data = resp.get_json()
 
@@ -41,7 +23,7 @@ def test_login_success(client):
 
 def test_login_failed (client):
 
-    resp = client.post("/api/v1/login")
+    resp = client.post("/api/v1/login", json="")
     resp_json_data = resp.get_json()
 
     assert resp.status_code == 400
