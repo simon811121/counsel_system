@@ -34,6 +34,22 @@ echo
 echo "---account id---"
 id="123456789"
 url="http://127.0.0.1:5000/"$API_VER"/account/"$id
+echo "---GET---"
 curl -X GET $url
+echo "---PUT---"
+curl -X PUT $url
+echo
+#==================================================
+echo
+echo "===Password page==="
+echo "---Forget---"
+url="http://127.0.0.1:5000/"$API_VER"/password/forget"
+curl -X POST $url
+echo "---Setup---"
+url="http://127.0.0.1:5000/"$API_VER"/password/setup"
+echo "---GET---"
+curl -X GET $url
+echo "---POST---"
+curl -X POST $url
 echo
 #==================================================

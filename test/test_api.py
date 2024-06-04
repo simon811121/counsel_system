@@ -40,3 +40,21 @@ def test_logout (client):
     assert "message" in resp_json_data
     assert resp_json_data["message"] == "Logout successfully"
 
+def test_account_id (client):
+    account_id = 123456789
+    resp = client.get("/api/v1/account/" + str(account_id))
+    resp_json_data = resp.get_json()
+    assert resp_json_data["message"] == "Data received successfully"
+    assert resp_json_data["account_id"] == str(account_id)
+
+    resp = client.put("/api/v1/account/" + str(account_id))
+    resp_json_data = resp.get_json()
+    assert resp.status_code == 200
+
+def test_password (client):
+    resp = client.post("/api/v1/password/forget")
+    assert resp.status_code == 200
+    resp = client.post("/api/v1/password/setup")
+    assert resp.status_code == 200
+    resp = client.get("/api/v1/password/setup")
+    assert resp.status_code == 200
