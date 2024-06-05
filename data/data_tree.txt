@@ -1,0 +1,13 @@
+/data/
+|
+|- account_info.csv
+   |
+   |- info.sheet
+      |
+      |- user_id
+      |- permission(director, psychologist, manager, guest)
+      |- acount
+      |- password
+      |- name
+      |- e-mail
+      |- phone_num
