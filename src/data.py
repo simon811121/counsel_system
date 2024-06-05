@@ -1,12 +1,32 @@
 import os
 import csv
 import datetime
+import enum
 
 acnt_info_file_name = "account_info.csv"
-fieldnames = ['user_id', 'permission', 'account', 'password', 'name', 'email', 'phone_num', 'register_time', 'last_login_time']
+acnt_info_fieldnames = ['user_id', 'permission', 'account', 'password', 'name', 'email', 'phone_num', 'register_time', 'last_login_time']
+allowed_permissions = {'director', 'psychologist', 'manager', 'guest'}
+
+class Allow_Perm(enum):
+    director = 1
+    psychologist = 2
+    manager = 3
+    guest = 4
+
 class Account_Info:
     class Info:
-        def __init__(self, user_id, permission, account, password, name, email, phone_num, register_time, last_login_time):
+        def __init__(self,
+                     user_id: int,
+                     permission: Allow_Perm,
+                     account: str,
+                     password: str,
+                     name: str,
+                     email: str,
+                     phone_num: int,
+                     register_time: str,
+                     last_login_time: str):
+            if permission not in allowed_permissions:
+                raise ValueError("Invalid permission value. Allowed values: 'director', 'psychologist', 'manager', 'guest'")
             self.user_id = user_id
             self.permission = permission
             self.account = account
@@ -24,7 +44,7 @@ class Account_Info:
 
 def gen_file_path(file_name):
     cur_path = os.getcwd()
-    file_path = cur_path + "\\" + file_name
+    file_path = os.path.join(cur_path, file_name)
     return file_path
 
 def check_file(file_name):
@@ -45,7 +65,7 @@ def build_file(file_name):
                 writer.writerow([info.user_id, info.permission, info.account, info.password, info.name, info.email, info.phone_num, info.register_time, info.last_login_time])
     else:
         with open(file_path, 'w', newline='') as file:
-            writer = csv.DictWriter(file, fieldnames=fieldnames)
+            writer = csv.DictWriter(file, fieldnames=acnt_info_fieldnames)
             writer.writeheader()
         print("File NOT exist, create one")
 
