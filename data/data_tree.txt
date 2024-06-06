@@ -1,5 +1,7 @@
 /data/
 |
+|- config.json
+|
 |- account_info.csv
    |
    |- user_id
