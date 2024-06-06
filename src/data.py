@@ -1,13 +1,13 @@
 import os
 import csv
 import datetime
-import enum
+from enum import Enum
 
 acnt_info_file_name = "account_info.csv"
-acnt_info_fieldnames = ['user_id', 'permission', 'account', 'password', 'name', 'email', 'phone_num', 'register_time', 'last_login_time']
+acnt_info_fieldnames = ['user_id', 'permission', 'permission_id', 'account', 'password', 'name', 'email', 'phone_num', 'register_time', 'last_login_time']
 allowed_permissions = {'director', 'psychologist', 'manager', 'guest'}
 
-class Allow_Perm(enum):
+class Allow_Perm(Enum):
     director = 1
     psychologist = 2
     manager = 3
@@ -17,7 +17,7 @@ class Account_Info:
     class Info:
         def __init__(self,
                      user_id: int,
-                     permission: Allow_Perm,
+                     permission: str,
                      account: str,
                      password: str,
                      name: str,
@@ -27,8 +27,10 @@ class Account_Info:
                      last_login_time: str):
             if permission not in allowed_permissions:
                 raise ValueError("Invalid permission value. Allowed values: 'director', 'psychologist', 'manager', 'guest'")
+            permission_id = Allow_Perm[permission]
             self.user_id = user_id
             self.permission = permission
+            self.permission_id = permission_id.value
             self.account = account
             self.password = password
             self.name = name
@@ -44,7 +46,7 @@ class Account_Info:
 
 def gen_file_path(file_name):
     cur_path = os.getcwd()
-    file_path = os.path.join(cur_path, file_name)
+    file_path = os.path.join(cur_path, 'data', file_name)
     return file_path
 
 def check_file(file_name):
@@ -62,7 +64,7 @@ def build_file(file_name):
             account_info.add_info(1, 'director', 'user1', 'pwd1', 'John Snow', 'john_snow@example.com', '12345678', formatted_datetime, formatted_datetime)
             account_info.add_info(2, 'director', 'user2', 'pwd2', 'Snow Peak', 'snow_peak@example.com', '87654321', formatted_datetime, formatted_datetime)
             for info in account_info.infos:
-                writer.writerow([info.user_id, info.permission, info.account, info.password, info.name, info.email, info.phone_num, info.register_time, info.last_login_time])
+                writer.writerow([info.user_id, info.permission, info.permission_id, info.account, info.password, info.name, info.email, info.phone_num, info.register_time, info.last_login_time])
     else:
         with open(file_path, 'w', newline='') as file:
             writer = csv.DictWriter(file, fieldnames=acnt_info_fieldnames)
