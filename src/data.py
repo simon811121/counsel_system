@@ -132,21 +132,3 @@ def gen_file_path(file_name):
     cur_path = os.getcwd()
     file_path = os.path.join(cur_path, 'data', file_name)
     return file_path
-
-if __name__ == '__main__':
-    acnt_info = Account_Info()
-    acnt_info.glb_cfg.update_setting('acnt_info', 'nxt_user_id', 0)
-    acnt_info.glb_cfg.save_settings()
-    acnt_info._refresh_file()
-    cur_time = datetime.datetime.now()
-    for_time = cur_time.strftime("%Y-%m-%d %H:%M:%S")
-    acnt_info.add_acnt_info('director', 'abcd', 'qazwsx', 'Simon', 's@example.com', '12345678', for_time, for_time)
-    cur_time = datetime.datetime.now()
-    for_time = cur_time.strftime("%Y-%m-%d %H:%M:%S")
-    acnt_info.add_acnt_info('psychologist', 'efgh', 'edcrfv', 'Jing', 'J@example.com', '87654321', for_time, for_time)
-    cur_time = datetime.datetime.now()
-    for_time = cur_time.strftime("%Y-%m-%d %H:%M:%S")
-    acnt_info.add_acnt_info('manager', 'efgh', 'edcrfv', 'Jing', 'J@example.com', '87654321', for_time, for_time)
-    print(acnt_info.find_acnt_info(0))
-    print(acnt_info.find_acnt_info(1))
-    print(acnt_info.find_acnt_info(2))
