@@ -1,10 +1,19 @@
 import json
+from src.data import acnt_info
 
 def test_login_home(test_client):
     resp = test_client.get("/api/v1/hello")
 
     assert resp.status_code == 200
     assert b"Welcome to counsel system login function!" in resp.data
+
+def test_register(test_client):
+    register_data_file = open("./test/input/register.json")
+    req_json_data = json.load(register_data_file)
+
+    resp = test_client.post("/api/v1/register", json=req_json_data)
+
+    assert resp.status_code == 200
 
 def test_login_success(test_client):
 

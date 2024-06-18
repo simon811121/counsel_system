@@ -1,10 +1,31 @@
 from flask import Blueprint, request, jsonify, make_response
+from src.data import acnt_info
+import datetime
 
 api = Blueprint('api', __name__, url_prefix='/api/v1')
 
 @api.route('/hello')
 def hello():
     return "Welcome to counsel system login function!"
+
+@api.route('/register', methods=['POST'])
+def register():
+    data = request.json
+    if data:
+        cur_time = datetime.datetime.now()
+        for_time = cur_time.strftime("%Y-%m-%d %H:%M:%S")
+        data['register_time'] = for_time
+        data['last_login_time'] = for_time
+        rslt = acnt_info.add_acnt_info(**data)
+        if rslt:
+            result = {'message': 'Data received successfully', 'data': data}
+            return jsonify(result), 200
+        else:
+            result = {'message': 'Data received successfully but registered failed', 'data': data}
+            return jsonify(result), 201
+    else:
+        result = {'message': 'No data received from frontend'}
+        return jsonify(result), 400
 
 @api.route('/login', methods=['POST'])
 def login():

@@ -1,0 +1,6 @@
+{
+    "acnt_info": {
+        "max_user_id": 100,
+        "nxt_user_id": 0
+    }
+}
