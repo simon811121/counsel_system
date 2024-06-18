@@ -18,10 +18,10 @@ def register():
         data['last_login_time'] = for_time
         rslt = acnt_info.add_acnt_info(**data)
         if rslt:
-            result = {'message': 'Data received successfully', 'data': data}
+            result = {'message': 'Data received successfully'}
             return jsonify(result), 200
         else:
-            result = {'message': 'Data received successfully but registered failed', 'data': data}
+            result = {'message': 'Data received successfully but registered failed'}
             return jsonify(result), 201
     else:
         result = {'message': 'No data received from frontend'}
@@ -31,8 +31,15 @@ def register():
 def login():
     data = request.json
     if data:
-        result = {'message': 'Data received successfully', 'data': data}
-        return jsonify(result), 200
+        account = data['account']
+        infos = acnt_info.find_acnt_info(account=account)
+        if infos:
+            user_id = infos.user_id
+            result = {'message': 'Data received successfully', 'user_id' : user_id}
+            return jsonify(result), 200
+        else:
+            result = {'message': 'Data received successfully but account not found'}
+            return jsonify(result), 201
     else:
         result = {'message': 'No data received from frontend'}
         return jsonify(result), 400

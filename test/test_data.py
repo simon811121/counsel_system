@@ -5,8 +5,10 @@ def test_add_acnt_info(test_acnt_info):
     for_time = cur_time.strftime("%Y-%m-%d %H:%M:%S")
     rslt = test_acnt_info.add_acnt_info('director', 'abcd', 'qazwsx', 'Simon', 's@example.com', '12345678', for_time, for_time)
     assert rslt == True
-    acnt = test_acnt_info.find_acnt_info(0)
+    acnt = test_acnt_info.find_acnt_info(user_id=0)
+    acnt_ = test_acnt_info.find_acnt_info(account='abcd')
     assert acnt != None
+    assert acnt._equals(acnt_) == True
     assert acnt.user_id == 0
     assert acnt.permission == 'director'
     assert acnt.account == 'abcd'
@@ -20,8 +22,10 @@ def test_add_acnt_info(test_acnt_info):
     for_time = cur_time.strftime("%Y-%m-%d %H:%M:%S")
     rslt = test_acnt_info.add_acnt_info('psychologist', 'efgh', 'asdfgh', 'Jobs', 'j@example.com', '87654321', for_time, for_time)
     assert rslt == True
-    acnt = test_acnt_info.find_acnt_info(1)
+    acnt = test_acnt_info.find_acnt_info(user_id=1)
+    acnt_ = test_acnt_info.find_acnt_info(account='efgh')
     assert acnt != None
+    assert acnt._equals(acnt_) == True
     assert acnt.user_id == 1
     assert acnt.permission == 'psychologist'
     assert acnt.account == 'efgh'

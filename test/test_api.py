@@ -1,5 +1,5 @@
 import json
-from src.data import acnt_info
+from src.data import Config
 
 def test_login_home(test_client):
     resp = test_client.get("/api/v1/hello")
@@ -16,6 +16,8 @@ def test_register(test_client):
     assert resp.status_code == 200
 
 def test_login_success(test_client):
+    # register first
+    test_register(test_client)
 
     login_data_file = open("./test/input/login.json")
     req_json_data = json.load(login_data_file)
@@ -23,12 +25,14 @@ def test_login_success(test_client):
     resp = test_client.post("/api/v1/login", json=req_json_data)
     resp_json_data = resp.get_json()
 
+    cfg = Config(False)
+    sctn = cfg.get_section('acnt_info')
+    nxt_user_id = sctn['nxt_user_id']
+
     assert resp.status_code == 200
     assert "message" in resp_json_data
-    assert "data" in resp_json_data
     assert resp_json_data["message"] == "Data received successfully"
-    assert resp_json_data["data"]["account_id"] == req_json_data["account_id"]
-    assert resp_json_data["data"]["password"] == req_json_data["password"]
+    assert (nxt_user_id - 1) == (resp_json_data['user_id'])
 
 def test_login_failed (test_client):
 

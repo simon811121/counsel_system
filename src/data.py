@@ -75,6 +75,7 @@ class Account_Info:
             self.phone_num = phone_num
             self.register_time = register_time
             self.last_login_time = last_login_time
+
         def __str__(self):
             return (f"Info(user_id = {self.user_id}\n"
                     f"     permission = {self.permission}\n"
@@ -85,6 +86,11 @@ class Account_Info:
                     f"     phone_num = {self.phone_num}\n"
                     f"     register_time = {self.register_time}\n"
                     f"     last_login_time = {self.last_login_time})")
+
+        def _equals(self, other):
+            if not isinstance(other, Account_Info.Info):
+                return False
+            return all(getattr(self, attr) == getattr(other, attr) for attr in vars(self))
 
     def __init__(self,
                  file_name: str = None):
@@ -132,19 +138,26 @@ class Account_Info:
             return False
 
     def find_acnt_info(self,
-                       user_id: int):
+                       user_id: int = None,
+                       account: str = None):
         for infos in self.infos:
-            if infos.user_id == user_id:
+            if user_id != None and infos.user_id == user_id:
+                return infos
+            elif account != None and infos.account == account:
                 return infos
         with open(self.file_path, 'r', encoding='utf-8') as file:
             csv_reader = csv.DictReader(file)
             for row in csv_reader:
                 # Check if the user_id matches
-                if int(row['user_id']) == user_id:
-                    row['user_id'] = user_id
+                infos = None
+                if user_id != None and int(row['user_id']) == user_id:
+                    row['user_id'] = int(row['user_id']) # read from csv, so type of user_id will be str
                     infos = self.Info(**row)
-                    self.infos.append(infos)
-                    return infos
+                elif account != None and row['account'] == account:
+                    row['user_id'] = int(row['user_id']) # read from csv, so type of user_id will be str
+                    infos = self.Info(**row)
+                self.infos.append(infos)
+                return infos
             return None
 
 def gen_file_path(file_name):

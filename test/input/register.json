@@ -1,0 +1,8 @@
+{
+    "permission" : "director",
+    "account" : "simon_huang",
+    "password" : "12345678",
+    "name" : "Simon",
+    "email" : "s@example.com",
+    "phone_num" : "12345678"
+}
