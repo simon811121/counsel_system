@@ -1,8 +1,7 @@
-import datetime
+from src.util import get_cur_time
 
 def test_add_acnt_info(test_acnt_info):
-    cur_time = datetime.datetime.now()
-    for_time = cur_time.strftime("%Y-%m-%d %H:%M:%S")
+    for_time = get_cur_time()
     rslt = test_acnt_info.add_acnt_info('director', 'abcd', 'qazwsx', 'Simon', 's@example.com', '12345678', for_time, for_time)
     assert rslt == True
     acnt = test_acnt_info.find_acnt_info(user_id=0)
@@ -18,8 +17,7 @@ def test_add_acnt_info(test_acnt_info):
     assert acnt.phone_num == '12345678'
     assert acnt.register_time == for_time
     assert acnt.last_login_time == for_time
-    cur_time = datetime.datetime.now()
-    for_time = cur_time.strftime("%Y-%m-%d %H:%M:%S")
+    for_time = get_cur_time()
     rslt = test_acnt_info.add_acnt_info('psychologist', 'efgh', 'asdfgh', 'Jobs', 'j@example.com', '87654321', for_time, for_time)
     assert rslt == True
     acnt = test_acnt_info.find_acnt_info(user_id=1)
@@ -37,7 +35,43 @@ def test_add_acnt_info(test_acnt_info):
     assert acnt.last_login_time == for_time
 
 def test_add_acnt_info_full(test_acnt_info_set_nxt_user_id):
-    cur_time = datetime.datetime.now()
-    for_time = cur_time.strftime("%Y-%m-%d %H:%M:%S")
+    for_time = get_cur_time()
     rslt = test_acnt_info_set_nxt_user_id.add_acnt_info('manager', 'ijkl', 'asdfgh', 'Jobs', 'h@example.com', '99999999', for_time, for_time)
     assert rslt == False
+
+def test_update_acnt_info(test_acnt_info):
+    for_time = get_cur_time()
+    rslt = test_acnt_info.add_acnt_info('director', 'abcd', 'qazwsx', 'Simon', 's@example.com', '12345678', for_time, for_time)
+    assert rslt == True
+    test_acnt_info.update_acnt_info(user_id=0, password='edcrfv')
+    acnt = test_acnt_info.find_acnt_info(user_id=0, skip_cache=True)
+    assert acnt.password == 'edcrfv'
+    test_acnt_info.update_acnt_info(user_id=0, name='nomiS')
+    acnt = test_acnt_info.find_acnt_info(user_id=0, skip_cache=True)
+    assert acnt.name == 'nomiS'
+    test_acnt_info.update_acnt_info(user_id=0, email='i@exmaple.com')
+    acnt = test_acnt_info.find_acnt_info(user_id=0, skip_cache=True)
+    assert acnt.email == 'i@exmaple.com'
+    test_acnt_info.update_acnt_info(user_id=0, phone_num='87654321')
+    acnt = test_acnt_info.find_acnt_info(user_id=0, skip_cache=True)
+    assert acnt.phone_num == '87654321'
+    for_time = get_cur_time()
+    test_acnt_info.update_acnt_info(account='abcd', last_login_time=for_time)
+    acnt = test_acnt_info.find_acnt_info(account='abcd', skip_cache=True)
+    assert acnt.last_login_time == for_time
+    test_acnt_info.update_acnt_info(account='abcd', password='edcrfv')
+    acnt = test_acnt_info.find_acnt_info(account='abcd', skip_cache=True)
+    assert acnt.password == 'edcrfv'
+    test_acnt_info.update_acnt_info(account='abcd', name='nomiS')
+    acnt = test_acnt_info.find_acnt_info(account='abcd', skip_cache=True)
+    assert acnt.name == 'nomiS'
+    test_acnt_info.update_acnt_info(account='abcd', email='i@exmaple.com')
+    acnt = test_acnt_info.find_acnt_info(account='abcd', skip_cache=True)
+    assert acnt.email == 'i@exmaple.com'
+    test_acnt_info.update_acnt_info(account='abcd', phone_num='87654321')
+    acnt = test_acnt_info.find_acnt_info(account='abcd', skip_cache=True)
+    assert acnt.phone_num == '87654321'
+    for_time = get_cur_time()
+    test_acnt_info.update_acnt_info(account='abcd', last_login_time=for_time)
+    acnt = test_acnt_info.find_acnt_info(account='abcd', skip_cache=True)
+    assert acnt.last_login_time == for_time

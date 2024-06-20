@@ -1,8 +1,16 @@
-from flask import Blueprint, request, jsonify, make_response
+from flask import Blueprint, request, jsonify, make_response, session
 from src.data import acnt_info
+from src.util import get_cur_time
 import datetime
+import pytz
 
 api = Blueprint('api', __name__, url_prefix='/api/v1')
+
+settings = {
+    'AUTO_LOGOUT_TIME': 300  # 300 seconds => 5 mins
+}
+def _settings_update(new_time=300):
+    settings['AUTO_LOGOUT_TIME'] = new_time
 
 @api.route('/hello')
 def hello():
@@ -12,8 +20,11 @@ def hello():
 def register():
     data = request.json
     if data:
-        cur_time = datetime.datetime.now()
-        for_time = cur_time.strftime("%Y-%m-%d %H:%M:%S")
+        account = data['account']
+        if acnt_info.check_account_aval(account) == False:
+            result = {'message': 'Data received successfully but registered failed. Duplicate Account'}
+            return jsonify(result), 400
+        for_time = get_cur_time()
         data['register_time'] = for_time
         data['last_login_time'] = for_time
         rslt = acnt_info.add_acnt_info(**data)
@@ -22,7 +33,7 @@ def register():
             return jsonify(result), 200
         else:
             result = {'message': 'Data received successfully but registered failed'}
-            return jsonify(result), 201
+            return jsonify(result), 400
     else:
         result = {'message': 'No data received from frontend'}
         return jsonify(result), 400
@@ -35,19 +46,42 @@ def login():
         infos = acnt_info.find_acnt_info(account=account)
         if infos:
             user_id = infos.user_id
-            result = {'message': 'Data received successfully', 'user_id' : user_id}
-            return jsonify(result), 200
+            infos.last_login_time = get_cur_time()
+            acnt_info.update_acnt_info(user_id=user_id, last_login_time=infos.last_login_time)
+            password = data['password']
+            if account not in session:
+                session['account'] = user_id
+                session['login_time'] = datetime.datetime.now(pytz.timezone('Asia/Taipei'))
+            if password == infos.password:
+                result = {'message': 'Data received successfully', 'user_id' : user_id}
+                return jsonify(result), 200
+            else:
+                result = {'message': 'Data received successfully but wrong password'}
+                return jsonify(result), 401
         else:
             result = {'message': 'Data received successfully but account not found'}
-            return jsonify(result), 201
+            return jsonify(result), 401
     else:
         result = {'message': 'No data received from frontend'}
         return jsonify(result), 400
 
 @api.route('/logout')
 def logout():
+    session.pop('account', None)
+    session.pop('login_time', None)
     result = {'message': 'Logout successfully'}
     return jsonify(result), 200
+
+@api.route('/check_logout')
+def check_logout():
+    login_time = session['login_time']
+    time_diff = datetime.datetime.now(pytz.timezone('Asia/Taipei')) - login_time
+    if time_diff.total_seconds() > settings['AUTO_LOGOUT_TIME']:
+        logout()
+        result = {'message': 'Auto Logout successfully'}
+        return jsonify(result)
+    result = {'message': 'Not yet time to logout'}
+    return jsonify(result)
 
 @api.route('/account', methods=['POST', 'GET'])
 def account():

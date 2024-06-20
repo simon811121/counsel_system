@@ -112,6 +112,13 @@ class Account_Info:
             os.remove(self.file_path)
             self._build_file()
 
+    def check_account_aval(self,
+                           account: str):
+        if self.find_acnt_info(account=account) == None:
+            return True
+        else:
+            return False
+
     def add_acnt_info(self,
                       permission: str,
                       account: str,
@@ -139,12 +146,14 @@ class Account_Info:
 
     def find_acnt_info(self,
                        user_id: int = None,
-                       account: str = None):
-        for infos in self.infos:
-            if user_id != None and infos.user_id == user_id:
-                return infos
-            elif account != None and infos.account == account:
-                return infos
+                       account: str = None,
+                       skip_cache = False):
+        if skip_cache == False:
+            for infos in self.infos:
+                if user_id != None and infos.user_id == user_id:
+                    return infos
+                elif account != None and infos.account == account:
+                    return infos
         with open(self.file_path, 'r', encoding='utf-8') as file:
             csv_reader = csv.DictReader(file)
             for row in csv_reader:
@@ -159,6 +168,46 @@ class Account_Info:
                 self.infos.append(infos)
                 return infos
             return None
+
+    def update_acnt_info(self,
+                         user_id: int = None,
+                         account: str = None,
+                         password: str = None,
+                         name: str = None,
+                         email: str = None,
+                         phone_num: str = None,
+                         last_login_time: str = None):
+        info = self.find_acnt_info(user_id=user_id, account=account) # check if info exist
+        if (info == None):
+            return False
+
+        # gen new from
+        update_values = {
+            'password': password,
+            'name': name,
+            'email': email,
+            'phone_num': phone_num,
+            'last_login_time': last_login_time
+        }
+        update_values = {key: value for key, value in update_values.items() if value is not None} # remove value which is None
+
+        # read csv
+        updated_rows = []
+        with open(self.file_path, 'r', newline='') as file:
+            reader = csv.DictReader(file)
+            headers = reader.fieldnames
+
+            for row in reader:
+                if row.get('user_id') == str(user_id) or row.get('account') == account:
+                    for key, new_value in update_values.items():
+                        row[key] = new_value
+                updated_rows.append(row)
+
+        # write to csv
+        with open(self.file_path, 'w', newline='') as file:
+            writer = csv.DictWriter(file, fieldnames=headers)
+            writer.writeheader()
+            writer.writerows(updated_rows)
 
 def gen_file_path(file_name):
     cur_path = os.getcwd()

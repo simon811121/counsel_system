@@ -1,14 +1,11 @@
-
-# factory.py
 from flask import Flask
-
-
 from src.api import api
 from src.home import home
-
+import os
 
 def create_app():
     flask_app = Flask(__name__)
+    flask_app.secret_key = os.urandom(16)
     flask_app.register_blueprint(home)
     flask_app.register_blueprint(api)
 
