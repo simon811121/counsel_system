@@ -3,8 +3,10 @@ from src.data import acnt_info
 from src.util import get_cur_time
 import datetime
 import pytz
+from flask_cors import CORS, cross_origin
 
 api = Blueprint('api', __name__, url_prefix='/api/v1')
+CORS(api, resources=r'/*')
 
 settings = {
     'AUTO_LOGOUT_TIME': 300  # 300 seconds => 5 mins
@@ -16,6 +18,7 @@ def _settings_update(new_time=300):
 def hello():
     return "Welcome to counsel system login function!"
 
+@cross_origin()
 @api.route('/register', methods=['POST'])
 def register():
     data = request.json
