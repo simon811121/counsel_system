@@ -50,8 +50,7 @@ def test_register_fail(test_client):
 
     # update nxt_user_id
     cfg = acnt_info.glb_cfg
-    sctn = cfg.get_section('acnt_info')
-    max_user_id = sctn['max_user_id']
+    max_user_id = cfg.get_setting('acnt_info', 'max_user_id')
     cfg.update_setting('acnt_info', 'nxt_user_id', max_user_id)
     cfg.save_settings()
 
@@ -80,8 +79,7 @@ def test_login_success(test_client):
 
     # get user_id from config
     cfg = acnt_info.glb_cfg
-    sctn = cfg.get_section('acnt_info')
-    nxt_user_id = sctn['nxt_user_id']
+    nxt_user_id = cfg.get_setting('acnt_info', 'nxt_user_id')
 
     assert resp.status_code == 200
     assert "message" in resp_json_data

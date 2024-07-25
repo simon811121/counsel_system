@@ -4,13 +4,7 @@ import json
 from enum import Enum
 from runtime_type_checker import check_type
 from typing import Any, Dict
-
-acnt_info_fieldnames = ['user_id', 'permission', 'account', 'password', 'name', 'email', 'phone_num', 'register_time', 'last_login_time']
-class Allow_Perm(Enum):
-    director = 1
-    psychologist = 2
-    manager = 3
-    guest = 4
+from openpyxl import Workbook, load_workbook
 
 class Config:
     def __init__(self,
@@ -40,7 +34,6 @@ class Config:
     def save_settings(self):
         with open(self.file_path, 'w') as file:
             json.dump(self.settings, file, indent=4)
-
 
 class Account_Info:
     class Info:
@@ -95,6 +88,7 @@ class Account_Info:
     def __init__(self,
                  file_name: str = None):
         self.file_name = "account_info.csv" if file_name is None else file_name
+        self.acnt_info_fieldnames = ['user_id', 'permission', 'account', 'password', 'name', 'email', 'phone_num', 'register_time', 'last_login_time']
         self.file_path = gen_file_path(self.file_name)
         self._build_file()
         self.infos = []
@@ -104,7 +98,7 @@ class Account_Info:
     def _build_file(self):
         if not os.path.exists(self.file_path):
             with open(self.file_path, 'w', newline='') as file:
-                writer = csv.DictWriter(file, fieldnames=acnt_info_fieldnames)
+                writer = csv.DictWriter(file, fieldnames=self.acnt_info_fieldnames)
                 writer.writeheader()
 
     def _refresh_file(self): # only for unit-testing
@@ -209,9 +203,105 @@ class Account_Info:
             writer.writeheader()
             writer.writerows(updated_rows)
 
+class Counseling_Record:
+    def __init__(self, file_name: str = None):
+        self.file_name = "counseling_record.xlsx" if file_name is None else file_name
+        self.file_path = gen_file_path(self.file_name)
+        self.item = ['base_info', 'counsel_date', 'counsel_type', 'counsel_main_complaint', 'treatment_goals', 'action_plan', 'summary']
+        self.base_info = ['name', 'bio_sex', 'birth_date', 'id_num', 'address']
+        self.counsel_date = ['counsel_date']
+        self.counsel_type = ['01. Individual Counseling', '02. Couple/Family Counseling', '03. Parent/Child Counseling', '04. Tele-counseling']
+        self.counsel_main_complaint = ['01. Financial Issues', '02. Employment/Work', '03. Career Planning',
+                                       '04. Psychological Issues Related to Medical Health', '05. Self-Awareness',
+                                       '06. Emotional Distress', '07. Behavioral Issues', '08. Major Loss or Life Changes',
+                                       '09. General Information', '10. Learning Issues', '11. Interpersonal Relationships',
+                                       '12. Stress and Emotional Distress', '13. Domestic Violence', '14. Suicide/Self-Harm',
+                                       '15. Sexual Assault', '16. Sexual Issues', '17. Death/Grief', '18. Family Issues',
+                                       '19. Other']
+        self.treatment_goals = ['01. Establish Relationship', '02. Focus on Work Goals', '03. Increase Self-Awareness',
+                                '04. Reduce Frustration', '05. Process Past Experiences', '06. Improve Interpersonal Relationships',
+                                '07. Enhance Emotional Management Skills', '08. Increase Coping Strategies',
+                                '09. Improve Environmental Adaptation Skills', '10. Other']
+        self.action_plan = ['01. Goal Setting', '02. Empathy and Support', '03. Experience Integration',
+                            '04. Internal Focus', '05. Self-Exploration', '06. Empowerment', '07. Emotional Expression',
+                            '08. Reframing', '09. Information Provision', '10. Case Closure Preparation', '11. Other']
+        self.summary = ['Summary']
+        self.item_size = [len(self.base_info), len(self.counsel_date), len(self.counsel_type),
+                          len(self.counsel_main_complaint), len(self.treatment_goals), len(self.action_plan),
+                          len(self.summary)]
+        self._build_file()
+
+    def _build_file(self):
+        if not os.path.exists(self.file_path):
+            workbook = Workbook()
+            sheet = workbook.active
+            sheet.title = 'Counseling Data'
+
+            # first title
+            headers = []
+            for item, size in zip(self.item, self.item_size):
+                headers.append(item)
+                headers.extend([None] * (size - 1))
+            sheet.append(headers)
+
+            # second title
+            headers = self.base_info + self.counsel_date + self.counsel_type + \
+                      self.counsel_main_complaint + self.treatment_goals + \
+                      self.action_plan + self.summary
+            sheet.append(headers)
+
+            workbook.save(self.file_path)
+
+    def _refresh_file(self): # only for unit-testing
+        if os.path.exists(self.file_path):
+            os.remove(self.file_path)
+            self._build_file()
+
+    def add_record(self, record):
+        if not os.path.exists(self.file_path):
+            self._build_file()
+
+        workbook = load_workbook(self.file_path)
+        sheet = workbook["Counseling Data"]
+        row = [record.get(header, None) for header in self.base_info + self.counsel_date + self.counsel_type + \
+                                                    self.counsel_main_complaint + self.treatment_goals + \
+                                                    self.action_plan + self.summary]
+        sheet.append(row)
+        workbook.save(self.file_path)
+
+    def read_record(self, id_num):
+        if not os.path.exists(self.file_path):
+            raise FileNotFoundError("The file does not exist.")
+
+        workbook = load_workbook(self.file_path)
+        sheet = workbook["Counseling Data"]
+
+        # Read headers (second row) and extract values
+        header2 = [cell.value for cell in sheet[2]]
+
+        # Find index of 'id_num' in header2
+        try:
+            id_index = header2.index('id_num')
+        except ValueError:
+            raise ValueError("The 'id_num' field is not present in the detailed field names.")
+
+        # Read records and find the row with the matching id_num
+        records = {}
+        for row in sheet.iter_rows(min_row=3, values_only=True):  # Starting from row 3 (where records start)
+            if len(row) > id_index and row[id_index] == str(id_num):
+                for header, value in zip(header2, row):
+                    records[header] = value
+                break
+
+        if not records:
+            raise ValueError(f"No record found with id_num '{id_num}'.")
+
+        return records
+
 def gen_file_path(file_name):
     cur_path = os.getcwd()
     file_path = os.path.join(cur_path, 'data', file_name)
     return file_path
 
 acnt_info = Account_Info()
+cnsl_rcrd = Counseling_Record()

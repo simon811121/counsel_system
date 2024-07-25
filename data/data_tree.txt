@@ -5,13 +5,89 @@
 |  |- acnt_info
 |
 |- account_info.csv / account_info_test.csv
+|  |
+|  |- user_id
+|  |- permission(director, psychologist, manager, guest)
+|  |- account
+|  |- password
+|  |- name
+|  |- email
+|  |- phone_num
+|  |- register_time
+|  |- last_login_time
+|
+|- counseling_record.csv / counseling_record_test.csv
    |
-   |- user_id
-   |- permission(director, psychologist, manager, guest)
-   |- account
-   |- password
-   |- name
-   |- email
-   |- phone_num
-   |- register_time
-   |- last_login_time
+   |- base
+   |  |
+   |  |- name
+   |  |- bio_sex
+   |  |- birth_date
+   |  |- id_num
+   |  |- address
+   |
+   |- counsel_date
+   |
+   |- counsel_type
+   |  |
+   |  |- 01. Individual Counseling
+   |  |- 02. Couple/Family Counseling
+   |  |- 03. Parent/Child Counseling
+   |  |- 04. Tele-counseling(include at least one of the type 01/02/03)
+   |
+   |- counsel_main_complaint
+   |  |
+   |  |- 01. Financial Issues
+   |  |- 02. Employment/Work
+   |  |- 03. Career Planning
+   |  |- 04. Psychological Issues Related to Medical Health
+   |  |- 05. Self-Awareness
+   |  |- 06. Emotional Distress
+   |  |- 07. Behavioral Issues
+   |  |- 08. Major Loss or Life Changes
+   |  |- 09. General Information
+   |  |- 10. Learning Issues
+   |  |- 11. Interpersonal Relationships
+   |  |- 12. Stress and Emotional Distress
+   |  |- 13. Domestic Violence
+   |  |- 14. Suicide/Self-Harm
+   |  |- 15. Sexual Assault
+   |  |- 16. Sexual Issues
+   |  |- 17. Death/Grief
+   |  |- 18. Family Issues
+   |  |  |
+   |  |  |- Family
+   |  |  |- Child Rearing
+   |  |  |- Marriage
+   |  |  |- Parent-Child
+   |  |
+   |  |- 19. Other:
+   |
+   |- treatment_goals
+   |  |
+   |  |- 01. Establish Relationship
+   |  |- 02. Focus on Work Goals
+   |  |- 03. Increase Self-Awareness
+   |  |- 04. Reduce Frustration
+   |  |- 05. Process Past Experiences
+   |  |- 06. Improve Interpersonal Relationships
+   |  |- 07. Enhance Emotional Management Skills
+   |  |- 08. Increase Coping Strategies
+   |  |- 09. Improve Environmental Adaptation Skills
+   |  |- 10. Other:
+   |
+   |- action_plan
+   |  |
+   |  |- 01. Goal Setting
+   |  |- 02. Empathy and Support
+   |  |- 03. Experience Integration
+   |  |- 04. Internal Focus
+   |  |- 05. Self-Exploration
+   |  |- 06. Empowerment
+   |  |- 07. Emotional Expression
+   |  |- 08. Reframing
+   |  |- 09. Information Provision
+   |  |- 10. Case Closure Preparation
+   |  |- 11. Other:
+   |
+   |- Summary(can be words or pictures)

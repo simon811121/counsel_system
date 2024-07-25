@@ -2,6 +2,7 @@ import pytest
 
 from main import create_app
 from src.data import Account_Info
+from src.data import Counseling_Record
 
 @pytest.fixture
 def test_app():
@@ -34,3 +35,13 @@ def test_acnt_info_set_nxt_user_id():
     acnt_info.glb_cfg.save_settings()
     acnt_info._refresh_file()
     yield acnt_info
+
+def create_cnsl_rcrd(file_name):
+    cnsl_rcrd = Counseling_Record(file_name)
+    return cnsl_rcrd
+
+@pytest.fixture
+def test_cnsl_rcrd():
+    cnsl_rcrd = create_cnsl_rcrd("counseling_record_test.xlsx")
+    cnsl_rcrd._refresh_file()
+    yield cnsl_rcrd
