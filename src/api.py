@@ -6,7 +6,7 @@ import pytz
 from flask_cors import CORS, cross_origin
 
 api = Blueprint('api', __name__, url_prefix='/api/v1')
-CORS(api, resources=r'/*')
+CORS(api, resources=r"/*", supports_credentials=True)
 
 settings = {
     'AUTO_LOGOUT_TIME': 300  # 300 seconds => 5 mins
