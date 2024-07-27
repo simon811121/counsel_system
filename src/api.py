@@ -98,6 +98,19 @@ def account():
     else:
         return jsonify({"error": "Method not allowed"}), 405
 
+@cross_origin()
+@api.route('/account/self', methods=["GET", 'OPTIONS'])
+def get_self_account():
+    if request.method == "OPTIONS":
+        return {}, 200
+
+    if session.get("account") is not None:
+        result = {'account_id': session.get('account')}
+        return jsonify(result), 200
+    else:
+        result = {'message': 'No valid account login info'}
+        return jsonify(result), 401
+
 
 @api.route('/account/<account_id>', methods=['GET', 'PUT'])
 def get_account(account_id):
