@@ -6,7 +6,7 @@ import pytz
 from flask_cors import CORS, cross_origin
 
 api = Blueprint('api', __name__, url_prefix='/api/v1')
-CORS(api, resources=r'/*')
+CORS(api, resources=r"/*", supports_credentials=True)
 
 settings = {
     'AUTO_LOGOUT_TIME': 300  # 300 seconds => 5 mins
@@ -46,7 +46,7 @@ def login():
     data = request.json
     if data:
         account = data['account']
-        infos = acnt_info.find_acnt_info(account=account)
+        infos = acnt_info.find_acnt_info(account=account, skip_cache=True)
         if infos:
             user_id = infos.user_id
             infos.last_login_time = get_cur_time()
@@ -97,6 +97,19 @@ def account():
         return jsonify(result), 200
     else:
         return jsonify({"error": "Method not allowed"}), 405
+
+@cross_origin()
+@api.route('/account/self', methods=["GET", 'OPTIONS'])
+def get_self_account():
+    if request.method == "OPTIONS":
+        return {}, 200
+
+    if session.get("account") is not None:
+        result = {'account_id': session.get('account')}
+        return jsonify(result), 200
+    else:
+        result = {'message': 'No valid account login info'}
+        return jsonify(result), 401
 
 
 @api.route('/account/<account_id>', methods=['GET', 'PUT'])
