@@ -207,28 +207,18 @@ class Counseling_Record:
     def __init__(self, file_name: str = None):
         self.file_name = "counseling_record.xlsx" if file_name is None else file_name
         self.file_path = gen_file_path(self.file_name)
-        self.item = ['base_info', 'counsel_date', 'counsel_type', 'counsel_main_complaint', 'treatment_goals', 'action_plan', 'summary']
-        self.base_info = ['name', 'bio_sex', 'birth_date', 'id_num', 'address']
-        self.counsel_date = ['counsel_date']
-        self.counsel_type = ['01. Individual Counseling', '02. Couple/Family Counseling', '03. Parent/Child Counseling', '04. Tele-counseling']
-        self.counsel_main_complaint = ['01. Financial Issues', '02. Employment/Work', '03. Career Planning',
-                                       '04. Psychological Issues Related to Medical Health', '05. Self-Awareness',
-                                       '06. Emotional Distress', '07. Behavioral Issues', '08. Major Loss or Life Changes',
-                                       '09. General Information', '10. Learning Issues', '11. Interpersonal Relationships',
-                                       '12. Stress and Emotional Distress', '13. Domestic Violence', '14. Suicide/Self-Harm',
-                                       '15. Sexual Assault', '16. Sexual Issues', '17. Death/Grief', '18. Family Issues',
-                                       '19. Other']
-        self.treatment_goals = ['01. Establish Relationship', '02. Focus on Work Goals', '03. Increase Self-Awareness',
-                                '04. Reduce Frustration', '05. Process Past Experiences', '06. Improve Interpersonal Relationships',
-                                '07. Enhance Emotional Management Skills', '08. Increase Coping Strategies',
-                                '09. Improve Environmental Adaptation Skills', '10. Other']
-        self.action_plan = ['01. Goal Setting', '02. Empathy and Support', '03. Experience Integration',
-                            '04. Internal Focus', '05. Self-Exploration', '06. Empowerment', '07. Emotional Expression',
-                            '08. Reframing', '09. Information Provision', '10. Case Closure Preparation', '11. Other']
-        self.summary = ['Summary']
-        self.item_size = [len(self.base_info), len(self.counsel_date), len(self.counsel_type),
-                          len(self.counsel_main_complaint), len(self.treatment_goals), len(self.action_plan),
-                          len(self.summary)]
+        self.glb_cfg = Config(False) if file_name is None else Config(True)
+        self.setting = self.glb_cfg.get_section('cnsl_rcrd')
+        self.topic = list(self.setting.keys())
+        self.item = []
+        self.item_size = []
+        self.item_header = []
+        for sub_topic in self.topic:
+            cur_items = self.setting[sub_topic]
+            self.item.append(list(cur_items))
+            self.item_size.append(len(cur_items))
+            for sub_item in cur_items:
+                self.item_header.append(sub_item)
         self._build_file()
 
     def _build_file(self):
@@ -239,15 +229,13 @@ class Counseling_Record:
 
             # first title
             headers = []
-            for item, size in zip(self.item, self.item_size):
-                headers.append(item)
+            for topic, size in zip(self.topic, self.item_size):
+                headers.append(topic)
                 headers.extend([None] * (size - 1))
             sheet.append(headers)
 
             # second title
-            headers = self.base_info + self.counsel_date + self.counsel_type + \
-                      self.counsel_main_complaint + self.treatment_goals + \
-                      self.action_plan + self.summary
+            headers = self.item_header
             sheet.append(headers)
 
             workbook.save(self.file_path)
@@ -263,9 +251,7 @@ class Counseling_Record:
 
         workbook = load_workbook(self.file_path)
         sheet = workbook["Counseling Data"]
-        row = [record.get(header, None) for header in self.base_info + self.counsel_date + self.counsel_type + \
-                                                    self.counsel_main_complaint + self.treatment_goals + \
-                                                    self.action_plan + self.summary]
+        row = [record.get(header, None) for header in self.item_header]
         sheet.append(row)
         workbook.save(self.file_path)
 
