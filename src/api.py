@@ -46,7 +46,7 @@ def login():
     data = request.json
     if data:
         account = data['account']
-        infos = acnt_info.find_acnt_info(account=account)
+        infos = acnt_info.find_acnt_info(account=account, skip_cache=True)
         if infos:
             user_id = infos.user_id
             infos.last_login_time = get_cur_time()
