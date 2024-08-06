@@ -10,7 +10,7 @@ class Config:
     def __init__(self,
                  testing: bool):
         self.file_name = "config.json" if testing is False else "config_test.json"
-        file_path = gen_file_path(self.file_name)
+        file_path = gen_file_path(self.file_name, 'data')
         self.file_path = file_path
         self.settings = self._read_settings()
 
@@ -89,7 +89,7 @@ class Account_Info:
                  file_name: str = None):
         self.file_name = "account_info.csv" if file_name is None else file_name
         self.acnt_info_fieldnames = ['user_id', 'permission', 'account', 'password', 'name', 'email', 'phone_num', 'register_time', 'last_login_time']
-        self.file_path = gen_file_path(self.file_name)
+        self.file_path = gen_file_path(self.file_name, 'data')
         self._build_file()
         self.infos = []
         self.glb_cfg = Config(False) if file_name is None else Config(True)
@@ -130,7 +130,7 @@ class Account_Info:
             user_id += 1
             self.glb_cfg.update_setting('acnt_info', 'nxt_user_id', user_id)
             self.glb_cfg.save_settings()
-            self.file_path = gen_file_path(self.file_name)
+            self.file_path = gen_file_path(self.file_name, 'data')
             with open(self.file_path, 'a', newline='') as file:
                 writer = csv.writer(file)
                 writer.writerow([info.user_id, info.permission, info.account, info.password, info.name, info.email, info.phone_num, info.register_time, info.last_login_time])
@@ -204,62 +204,74 @@ class Account_Info:
             writer.writerows(updated_rows)
 
 class Counseling_Record:
-    def __init__(self, file_name: str = None):
-        self.file_name = "counseling_record.xlsx" if file_name is None else file_name
-        self.file_path = gen_file_path(self.file_name)
-        self.glb_cfg = Config(False) if file_name is None else Config(True)
-        self.setting = self.glb_cfg.get_section('cnsl_rcrd')
-        self.topic = list(self.setting.keys())
-        self.item = []
-        self.item_size = []
-        self.item_header = []
-        for sub_topic in self.topic:
-            cur_items = self.setting[sub_topic]
-            self.item.append(list(cur_items))
-            self.item_size.append(len(cur_items))
+    def __init__(self, info_file_name: str = None, info_pati_file_name: str = None):
+        self.info_file_name = "cnsl_info_psychol.xlsx" if info_file_name is None else info_file_name
+        self.info_file_path = gen_file_path(self.info_file_name, 'data', 'counsel')
+        self.info_pati_file_name = "cnsl_info_patient.xlsx" if info_pati_file_name is None else info_pati_file_name
+        self.info_pati_file_path = gen_file_path(self.info_pati_file_name, 'data', 'counsel')
+        self.glb_cfg = Config(False) if info_file_name is None or info_pati_file_name is None else Config(True)
+        self.cnsl_info_setting = self.glb_cfg.get_section('cnsl_info')
+        self.cnsl_rcrd_setting = self.glb_cfg.get_section('cnsl_rcrd')
+        self.cnsl_rcrd_topic = list(self.cnsl_rcrd_setting.keys())
+        self.cnsl_rcrd_item = []
+        self.cnsl_rcrd_item_size = []
+        self.cnsl_rcrd_item_header = []
+        for sub_topic in self.cnsl_rcrd_topic:
+            cur_items = self.cnsl_rcrd_setting[sub_topic]
+            self.cnsl_rcrd_item.append(list(cur_items))
+            self.cnsl_rcrd_item_size.append(len(cur_items))
             for sub_item in cur_items:
-                self.item_header.append(sub_item)
-        self._build_file()
+                self.cnsl_rcrd_item_header.append(sub_item)
 
-    def _build_file(self):
-        if not os.path.exists(self.file_path):
+    def _build_file(self, file_path):
+        if not os.path.exists(file_path):
             workbook = Workbook()
             sheet = workbook.active
             sheet.title = 'Counseling Data'
 
             # first title
             headers = []
-            for topic, size in zip(self.topic, self.item_size):
-                headers.append(topic)
+            for cnsl_rcrd_topic, size in zip(self.cnsl_rcrd_topic, self.cnsl_rcrd_item_size):
+                headers.append(cnsl_rcrd_topic)
                 headers.extend([None] * (size - 1))
             sheet.append(headers)
 
             # second title
-            headers = self.item_header
+            headers = self.cnsl_rcrd_item_header
             sheet.append(headers)
 
-            workbook.save(self.file_path)
+            workbook.save(file_path)
 
-    def _refresh_file(self): # only for unit-testing
-        if os.path.exists(self.file_path):
-            os.remove(self.file_path)
-            self._build_file()
+    def _refresh_file(self, file_path): # only for unit-testing
+        if os.path.exists(file_path):
+            os.remove(file_path)
+            self._build_file(file_path)
 
-    def add_record(self, record):
-        if not os.path.exists(self.file_path):
-            self._build_file()
+    def get_cnsl_info_psychol(self, user_id): # TODO
+        workbook = load_workbook(self.info_file_path)
+        # get user_id => patient_id (list)
 
-        workbook = load_workbook(self.file_path)
+    def get_cnsl_info_patient(self): # TODO
+        workbook = load_workbook(self.info_pati_file_path)
+        # get patient_id => patient_name
+
+    def add_record(self, record, id_num):
+        file_path = gen_file_path((str(id_num) + ".xlsx"), 'data', 'counsel')
+        if not os.path.exists(file_path):
+            self._build_file(file_path)
+
+        workbook = load_workbook(file_path)
         sheet = workbook["Counseling Data"]
-        row = [record.get(header, None) for header in self.item_header]
+        row = [record.get(header, None) for header in self.cnsl_rcrd_item_header]
         sheet.append(row)
-        workbook.save(self.file_path)
+        workbook.save(file_path)
 
     def read_record(self, id_num):
-        if not os.path.exists(self.file_path):
+        file_path = gen_file_path((str(id_num) + ".xlsx"), 'data', 'counsel')
+        if not os.path.exists(file_path):
             raise FileNotFoundError("The file does not exist.")
 
-        workbook = load_workbook(self.file_path)
+        workbook = load_workbook(file_path)
         sheet = workbook["Counseling Data"]
 
         # Read headers (second row) and extract values
@@ -284,9 +296,12 @@ class Counseling_Record:
 
         return records
 
-def gen_file_path(file_name):
+def gen_file_path(file_name, sub_path1, sub_path2: str = None):
     cur_path = os.getcwd()
-    file_path = os.path.join(cur_path, 'data', file_name)
+    sub_paths = [sub_path1]
+    if sub_path2:
+        sub_paths.append(sub_path2)
+    file_path = os.path.join(cur_path, *sub_paths, file_name)
     return file_path
 
 acnt_info = Account_Info()
