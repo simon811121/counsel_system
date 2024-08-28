@@ -63,7 +63,6 @@ def test_register_fail(test_client):
     assert resp.status_code == 400
     assert "registered failed" in resp_json_data["message"]
 
-
 def test_login_success(test_client):
     # re-init acnt_info
     re_init_acnt_info()
@@ -125,7 +124,6 @@ def test_login_failed_no_input(test_client):
     assert resp.status_code == 400
     assert "message" in resp_json_data
     assert resp_json_data["message"] == "No data received from frontend"
-
 
 def test_logout(test_client):
     # login first

@@ -204,26 +204,47 @@ class Account_Info:
             writer.writerows(updated_rows)
 
 class Counseling_Record:
-    def __init__(self, info_file_name: str = None, info_pati_file_name: str = None):
-        self.info_file_name = "cnsl_info_psychol.xlsx" if info_file_name is None else info_file_name
-        self.info_file_path = gen_file_path(self.info_file_name, 'data', 'counsel')
-        self.info_pati_file_name = "cnsl_info_patient.xlsx" if info_pati_file_name is None else info_pati_file_name
-        self.info_pati_file_path = gen_file_path(self.info_pati_file_name, 'data', 'counsel')
-        self.glb_cfg = Config(False) if info_file_name is None or info_pati_file_name is None else Config(True)
-        self.cnsl_info_setting = self.glb_cfg.get_section('cnsl_info')
-        self.cnsl_rcrd_setting = self.glb_cfg.get_section('cnsl_rcrd')
-        self.cnsl_rcrd_topic = list(self.cnsl_rcrd_setting.keys())
+    def __init__(self, psychol_file_name: str = None, patient_file_name: str = None):
+        self.psychol_file_name = "cnsl_info_psychol.xlsx" if psychol_file_name is None else psychol_file_name
+        self.psychol_path = gen_file_path(self.psychol_file_name, 'data', 'counsel')
+        self.patient_file_name = "cnsl_info_patient.xlsx" if patient_file_name is None else patient_file_name
+        self.patient_path = gen_file_path(self.patient_file_name, 'data', 'counsel')
+        self.testing = True if (psychol_file_name and patient_file_name) is not None else False
+        self.glb_cfg = Config(False) if psychol_file_name is None or patient_file_name is None else Config(True)
+        self.psychol_setting = self.glb_cfg.get_section('cnsl_info_psychol')
+        self.psychol_topic = list(self.psychol_setting.keys())
+        self._build_file(self.psychol_path, "Psycholist Info", self.psychol_topic)
+        self.patient_setting = self.glb_cfg.get_section('cnsl_info_patient')
+        self.patient_topic = list(self.patient_setting.keys())
+        self._build_file(self.patient_path, "Patient Info", self.patient_topic)
+        self.cnsl_rcrd_info_pat_setting = self.glb_cfg.get_section('cnsl_rcrd_info_pat')
+        self.cnsl_rcrd_pat_setting = self.glb_cfg.get_section('cnsl_rcrd_pat')
+        self.cnsl_rcrd_topic = list(self.cnsl_rcrd_pat_setting.keys())
         self.cnsl_rcrd_item = []
         self.cnsl_rcrd_item_size = []
         self.cnsl_rcrd_item_header = []
         for sub_topic in self.cnsl_rcrd_topic:
-            cur_items = self.cnsl_rcrd_setting[sub_topic]
+            cur_items = self.cnsl_rcrd_pat_setting[sub_topic]
             self.cnsl_rcrd_item.append(list(cur_items))
             self.cnsl_rcrd_item_size.append(len(cur_items))
             for sub_item in cur_items:
                 self.cnsl_rcrd_item_header.append(sub_item)
 
-    def _build_file(self, file_path):
+    def _build_file(self, file_path, title, topic):
+        if not os.path.exists(file_path):
+            workbook = Workbook()
+            sheet = workbook.active
+            sheet.title = title
+
+            # title
+            headers = []
+            for sub_topic in topic:
+                headers.append(sub_topic)
+            sheet.append(headers)
+
+            workbook.save(file_path)
+
+    def _build_rcrd(self, file_path):
         if not os.path.exists(file_path):
             workbook = Workbook()
             sheet = workbook.active
@@ -242,32 +263,56 @@ class Counseling_Record:
 
             workbook.save(file_path)
 
-    def _refresh_file(self, file_path): # only for unit-testing
-        if os.path.exists(file_path):
-            os.remove(file_path)
-            self._build_file(file_path)
+    def _refresh_file(self): # only for unit-testing
+        file_path = [self.psychol_path, self.patient_path]
+        title = ['Psycholist Info', 'Patient Info']
+        topic = [self.psychol_topic, self.patient_topic]
+        for p, tt, tp in zip(file_path, title, topic):
+            if os.path.exists(p):
+                os.remove(p)
+                self._build_file(p, tt, tp)
+
+    def _get_cnsl_rcrd_info_pat_id(self):
+        pat_id = self.cnsl_rcrd_info_pat_setting['nxt_patitent_id']
+        max_pat_id = self.cnsl_rcrd_info_pat_setting['max_patitent_id']
+        if pat_id > max_pat_id:
+            return None
+        self.glb_cfg.update_setting('cnsl_rcrd_info_pat', 'nxt_patitent_id', (pat_id + 1))
+        self.glb_cfg.save_settings()
+        return pat_id
+
+    def _gen_cnsl_rcrd_file_name(self, id_num):
+        return (str(id_num) + ".xlsx") if self.testing is False else (str(id_num) + "_test.xlsx")
 
     def get_cnsl_info_psychol(self, user_id): # TODO
-        workbook = load_workbook(self.info_file_path)
+        workbook = load_workbook(self.psychol_path)
         # get user_id => patient_id (list)
 
     def get_cnsl_info_patient(self): # TODO
-        workbook = load_workbook(self.info_pati_file_path)
+        workbook = load_workbook(self.patient_path)
         # get patient_id => patient_name
 
-    def add_record(self, record, id_num):
-        file_path = gen_file_path((str(id_num) + ".xlsx"), 'data', 'counsel')
+    def add_record(self, record, id_num = None):
+        if id_num is None:
+            id_num = self._get_cnsl_rcrd_info_pat_id()
+        if id_num == None: # can't get id_num
+            return None
+        file_path = gen_file_path(self._gen_cnsl_rcrd_file_name(id_num), 'data', 'counsel')
         if not os.path.exists(file_path):
-            self._build_file(file_path)
+            self._build_rcrd(file_path)
 
         workbook = load_workbook(file_path)
         sheet = workbook["Counseling Data"]
+        if self.testing is True:
+            start_row = 3
+            sheet.delete_rows(start_row + 1, sheet.max_row - start_row)
         row = [record.get(header, None) for header in self.cnsl_rcrd_item_header]
         sheet.append(row)
         workbook.save(file_path)
+        return id_num
 
     def read_record(self, id_num):
-        file_path = gen_file_path((str(id_num) + ".xlsx"), 'data', 'counsel')
+        file_path = gen_file_path(self._gen_cnsl_rcrd_file_name(id_num), 'data', 'counsel')
         if not os.path.exists(file_path):
             raise FileNotFoundError("The file does not exist.")
 
@@ -277,24 +322,15 @@ class Counseling_Record:
         # Read headers (second row) and extract values
         header2 = [cell.value for cell in sheet[2]]
 
-        # Find index of 'id_num' in header2
-        try:
-            id_index = header2.index('id_num')
-        except ValueError:
-            raise ValueError("The 'id_num' field is not present in the detailed field names.")
-
         # Read records and find the row with the matching id_num
-        records = {}
+        all_records = []
         for row in sheet.iter_rows(min_row=3, values_only=True):  # Starting from row 3 (where records start)
-            if len(row) > id_index and row[id_index] == str(id_num):
-                for header, value in zip(header2, row):
-                    records[header] = value
-                break
+            records = {}
+            for header, value in zip(header2, row):
+                records[header] = value
+            all_records.append(records)
 
-        if not records:
-            raise ValueError(f"No record found with id_num '{id_num}'.")
-
-        return records
+        return all_records
 
 def gen_file_path(file_name, sub_path1, sub_path2: str = None):
     cur_path = os.getcwd()

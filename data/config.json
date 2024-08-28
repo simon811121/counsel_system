@@ -3,16 +3,23 @@
         "max_user_id": 100,
         "nxt_user_id": 0
     },
-    "cnsl_info": {
-        "max_patitent_id" : 10000,
-        "nxt_patitent_id" : 0
+    "cnsl_info_psychol": {
+        "user_id": "",
+        "patient_id": []
     },
-    "cnsl_rcrd": {
+    "cnsl_info_patient": {
+        "patient_id": "",
+        "patient_name": ""
+    },
+    "cnsl_rcrd_info_pat": {
+        "max_patitent_id": 10000,
+        "nxt_patitent_id": 0
+    },
+    "cnsl_rcrd_pat": {
         "base_info": {
             "name": "",
             "bio_sex": "",
             "birth_date": "",
-            "id_num": "",
             "address": ""
         },
         "counsel_date": {
@@ -70,6 +77,8 @@
             "10. Case Closure Preparation",
             "11. Other"
         ],
-        "summary": {"Summary": ""}
+        "summary": {
+            "Summary": ""
+        }
     }
 }
