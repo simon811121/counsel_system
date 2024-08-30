@@ -284,34 +284,71 @@ class Counseling_Record:
     def _gen_cnsl_rcrd_file_name(self, id_num):
         return (str(id_num) + ".xlsx") if self.testing is False else (str(id_num) + "_test.xlsx")
 
-    def get_cnsl_info_psychol(self, user_id): # TODO
+    def set_cnsl_info_psychol(self, user_id, patient_id):
+        check_type(user_id, int)
+        check_type(patient_id, int)
         workbook = load_workbook(self.psychol_path)
-        # get user_id => patient_id (list)
+        sheet = workbook["Psycholist Info"]
+        row = [str(user_id), str(patient_id)]
+        sheet.append(row)
+        workbook.save(self.psychol_path)
+        workbook.close()
 
-    def get_cnsl_info_patient(self): # TODO
+    def get_cnsl_info_psychol(self, user_id):
+        workbook = load_workbook(self.psychol_path)
+        sheet = workbook["Psycholist Info"]
+        patitent_id = []
+        for row in sheet.iter_rows(min_row=2, values_only=True):  # Starting from row 2 to exclude headers
+            if row[0] == str(user_id):
+                 patitent_id.append(int(row[1]))
+        workbook.close()
+        return patitent_id
+
+    def set_cnsl_info_patient(self, name, id_num):
+        check_type(name, str)
+        check_type(id_num, int)
         workbook = load_workbook(self.patient_path)
-        # get patient_id => patient_name
+        sheet = workbook["Patient Info"]
+        row = [str(id_num), name]
+        sheet.append(row)
+        workbook.save(self.patient_path)
+        workbook.close()
+
+    def get_cnsl_info_patient(self, id_num):
+        workbook = load_workbook(self.patient_path)
+        sheet = workbook["Patient Info"]
+        patitent_name = "No this patitent found"
+        for row in sheet.iter_rows(min_row=2, values_only=True):  # Starting from row 2 to exclude headers
+            if row[0] == str(id_num):
+                 patitent_name = row[1]
+        workbook.close()
+        return patitent_name
 
     def add_record(self, record, id_num = None):
+        reset_file = False
         if id_num is None:
+            reset_file = True
             id_num = self._get_cnsl_rcrd_info_pat_id()
-        if id_num == None: # can't get id_num
-            return None
+            name = record['name']
+            self.set_cnsl_info_patient(name, id_num)
+            if id_num == None: # can't get id_num
+                return None
         file_path = gen_file_path(self._gen_cnsl_rcrd_file_name(id_num), 'data', 'counsel')
         if not os.path.exists(file_path):
             self._build_rcrd(file_path)
 
         workbook = load_workbook(file_path)
         sheet = workbook["Counseling Data"]
-        if self.testing is True:
-            start_row = 3
+        if self.testing is True and reset_file is True:
+            start_row = 2
             sheet.delete_rows(start_row + 1, sheet.max_row - start_row)
         row = [record.get(header, None) for header in self.cnsl_rcrd_item_header]
         sheet.append(row)
         workbook.save(file_path)
+        workbook.close()
         return id_num
 
-    def read_record(self, id_num):
+    def read_record(self, id_num, date = None):
         file_path = gen_file_path(self._gen_cnsl_rcrd_file_name(id_num), 'data', 'counsel')
         if not os.path.exists(file_path):
             raise FileNotFoundError("The file does not exist.")
@@ -330,6 +367,14 @@ class Counseling_Record:
                 records[header] = value
             all_records.append(records)
 
+        # find specific date records
+        for records in all_records:
+            for key in records:
+                value = records[key]
+                if value == date:
+                    return records
+
+        workbook.close()
         return all_records
 
 def gen_file_path(file_name, sub_path1, sub_path2: str = None):
