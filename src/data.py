@@ -324,15 +324,18 @@ class Counseling_Record:
         workbook.close()
         return patitent_name
 
-    def add_record(self, record, id_num = None):
+    def add_record(self, record, user_id = None, id_num = None):
         reset_file = False
         if id_num is None:
+            if user_id is None: # no user_id to set
+                return None
             reset_file = True
             id_num = self._get_cnsl_rcrd_info_pat_id()
             name = record['name']
             self.set_cnsl_info_patient(name, id_num)
             if id_num == None: # can't get id_num
                 return None
+            self.set_cnsl_info_psychol(user_id, id_num)
         file_path = gen_file_path(self._gen_cnsl_rcrd_file_name(id_num), 'data', 'counsel')
         if not os.path.exists(file_path):
             self._build_rcrd(file_path)

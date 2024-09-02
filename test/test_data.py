@@ -150,7 +150,8 @@ def test_add_read_cnsl_rcrd(test_cnsl_rcrd):
     }
 
     # first add
-    id_num = test_cnsl_rcrd.add_record(record)
+    user_id = 0
+    id_num = test_cnsl_rcrd.add_record(record, user_id=user_id)
     name = test_cnsl_rcrd.get_cnsl_info_patient(id_num)
     assert record['name'] == name
     read_data = test_cnsl_rcrd.read_record(id_num)
@@ -209,7 +210,7 @@ def test_add_read_cnsl_rcrd(test_cnsl_rcrd):
         '11. Other': False,
         'Summary': 'John discussed his career goals to target Google Japan in the next 3 years.'
     }
-    id_num2 = test_cnsl_rcrd.add_record(record2, id_num)
+    id_num2 = test_cnsl_rcrd.add_record(record2, id_num=id_num)
     assert id_num2 == id_num
     read_data2 = test_cnsl_rcrd.read_record(id_num)
     assert len(read_data2) == 2
@@ -268,7 +269,7 @@ def test_add_read_cnsl_rcrd(test_cnsl_rcrd):
         'Summary': 'John planning for his target & thinking of which might be the priority task & the biggest trouble.'
     }
 
-    id_num3 = test_cnsl_rcrd.add_record(record3, id_num)
+    id_num3 = test_cnsl_rcrd.add_record(record3, id_num=id_num)
     assert id_num3 == id_num
     read_data3 = test_cnsl_rcrd.read_record(id_num)
     assert len(read_data3) == 3
@@ -276,3 +277,6 @@ def test_add_read_cnsl_rcrd(test_cnsl_rcrd):
 
     read_data4 = test_cnsl_rcrd.read_record(id_num, "2024-08-08")
     assert read_data4 == record3
+
+    pat_id = test_cnsl_rcrd.get_cnsl_info_psychol(user_id)
+    assert pat_id == [id_num]
