@@ -36,12 +36,14 @@ def test_acnt_info_set_nxt_user_id():
     acnt_info._refresh_file()
     yield acnt_info
 
-def create_cnsl_rcrd(file_name):
-    cnsl_rcrd = Counseling_Record(file_name)
+def create_cnsl_rcrd(psychol_file_name, patient_file_name):
+    cnsl_rcrd = Counseling_Record(psychol_file_name, patient_file_name)
     return cnsl_rcrd
 
 @pytest.fixture
 def test_cnsl_rcrd():
-    cnsl_rcrd = create_cnsl_rcrd("counseling_record_test.xlsx")
+    cnsl_rcrd = create_cnsl_rcrd("cnsl_info_psychol_test.xlsx", "cnsl_info_patient_test.xlsx")
+    cnsl_rcrd.glb_cfg.update_setting('cnsl_rcrd_info_pat', 'nxt_patitent_id', 0)
+    cnsl_rcrd.glb_cfg.save_settings()
     cnsl_rcrd._refresh_file()
     yield cnsl_rcrd
