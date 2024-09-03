@@ -3,6 +3,10 @@
 |- config.json / config_test.json
 |  |
 |  |- acnt_info
+|  |- cnsl_info_psychol
+|  |- cnsl_info_patient
+|  |- cnsl_rcrd_info_pat
+|  |- cnsl_rcrd_pat
 |
 |- account_info.csv / account_info_test.csv
 |  |

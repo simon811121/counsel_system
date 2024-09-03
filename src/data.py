@@ -380,6 +380,44 @@ class Counseling_Record:
         workbook.close()
         return all_records
 
+    def modify_record(self, id_num, data=None, date=None):
+        file_path = gen_file_path(self._gen_cnsl_rcrd_file_name(id_num), 'data', 'counsel')
+        if not os.path.exists(file_path):
+            raise FileNotFoundError("The file does not exist.")
+
+        workbook = load_workbook(file_path)
+        sheet = workbook["Counseling Data"]
+
+        # Read headers (second row) and extract values
+        header2 = [cell.value for cell in sheet[2]]
+        for key, value in data.items():
+            if key not in header2:
+                return # wrong input, do nothing
+
+        # Read records and find the row with the matching id_num
+        found_row_idx = 3
+        record = {}
+        for row in sheet.iter_rows(min_row=3, values_only=True):  # Starting from row 3 (where records start)
+            found = False
+            for value in row:
+                if value == date:
+                    found = True
+                    break
+            if found is True:
+                for header, value in zip(header2, row):
+                    record[header] = value
+                break
+            found_row_idx += 1
+        record.update(data)
+
+        # Update records to wordbook
+        col_idx = 1
+        for key, value in record.items():
+            sheet.cell(found_row_idx, col_idx, value)
+            col_idx += 1
+        workbook.save(file_path)
+        workbook.close()
+
 def gen_file_path(file_name, sub_path1, sub_path2: str = None):
     cur_path = os.getcwd()
     sub_paths = [sub_path1]

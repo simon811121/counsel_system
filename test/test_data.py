@@ -1,5 +1,6 @@
 from src.util import get_cur_time
 import random
+import copy
 
 def test_add_acnt_info(test_acnt_info):
     for_time = get_cur_time()
@@ -95,7 +96,7 @@ def test_cnsl_info_patient(test_cnsl_rcrd):
         na = test_cnsl_rcrd.get_cnsl_info_patient(i)
         assert na == n
 
-def test_add_read_cnsl_rcrd(test_cnsl_rcrd):
+def test_add_read_cnsl_rcrd(test_cnsl_rcrd, return_data = False):
     record = {
         'name': 'John Doe',
         'bio_sex': 'Male',
@@ -278,5 +279,40 @@ def test_add_read_cnsl_rcrd(test_cnsl_rcrd):
     read_data4 = test_cnsl_rcrd.read_record(id_num, "2024-08-08")
     assert read_data4 == record3
 
+    read_data5 = test_cnsl_rcrd.read_record(id_num, "2024-08-01")
+    assert read_data5 == record2
+
+    read_data6 = test_cnsl_rcrd.read_record(id_num, "2024-07-25")
+    assert read_data6 == record
+
     pat_id = test_cnsl_rcrd.get_cnsl_info_psychol(user_id)
     assert pat_id == [id_num]
+
+    if return_data is True:
+        return id_num, record2
+
+def test_add_modify_cnsl_rcrd(test_cnsl_rcrd):
+    # add some records
+    id_num, org_record = test_add_read_cnsl_rcrd(test_cnsl_rcrd, True)
+
+    mod_record = copy.deepcopy(org_record)
+    mod_record['02. Employment/Work'] = False
+    date = mod_record['counsel_date']
+    test_cnsl_rcrd.modify_record(id_num, mod_record, date)
+    new_record = test_cnsl_rcrd.read_record(id_num, date)
+    assert new_record == mod_record
+    assert new_record != org_record
+
+    mod_record2 = {'test1': True,
+                   'test2': True,
+                   'test3': True}
+    test_cnsl_rcrd.modify_record(id_num, mod_record2, date) # should not modify
+    assert new_record == mod_record
+
+    mod_record3 = {'01. Individual Counseling': False,
+                   '10. Learning Issues': True,
+                   '06. Improve Interpersonal Relationships': False}
+    test_cnsl_rcrd.modify_record(id_num, mod_record3, date)
+    new_record2 = test_cnsl_rcrd.read_record(id_num, date)
+    for key, value in mod_record3.items():
+        assert new_record2[key] == value

@@ -3,7 +3,7 @@ import time
 from src.data import acnt_info
 from src.api import _settings_update
 
-def re_init_acnt_info(set_max=False):
+def _re_init_acnt_info(set_max=False):
     acnt_info.__init__(file_name="account_info_test.csv")
     acnt_info._refresh_file()
     if set_max == False:
@@ -22,7 +22,7 @@ def test_login_home(test_client):
 
 def test_register_success(test_client):
     # re-init acnt_info
-    re_init_acnt_info()
+    _re_init_acnt_info()
 
     # send request
     register_data_file = open("./test/input/register.json")
@@ -46,7 +46,7 @@ def test_register_dup_account(test_client):
 
 def test_register_fail(test_client):
     # re-init acnt_info
-    re_init_acnt_info(True)
+    _re_init_acnt_info(True)
 
     # update nxt_user_id
     cfg = acnt_info.glb_cfg
@@ -65,7 +65,7 @@ def test_register_fail(test_client):
 
 def test_login_success(test_client):
     # re-init acnt_info
-    re_init_acnt_info()
+    _re_init_acnt_info()
 
     # register first
     test_register_success(test_client)
@@ -87,7 +87,7 @@ def test_login_success(test_client):
 
 def test_login_failed_wrong_password(test_client):
     # re-init acnt_info
-    re_init_acnt_info()
+    _re_init_acnt_info()
 
     # register first
     test_register_success(test_client)
@@ -102,7 +102,7 @@ def test_login_failed_wrong_password(test_client):
 
 def test_login_failed_no_account(test_client):
     # re-init acnt_info
-    re_init_acnt_info()
+    _re_init_acnt_info()
 
     # register first
     test_register_success(test_client)
